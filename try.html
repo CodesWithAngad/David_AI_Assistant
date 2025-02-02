@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot with AIML API</title>
+</head>
+<body>
+    <h1>Ask the Bot</h1>
+    <input type="text" id="userQuery" placeholder="Type your question" />
+    <button onclick="getChatCompletion()">Ask</button>
+    <p><strong>Response:</strong></p>
+    <div id="response"></div>
+
+    <script>
+        // Function to fetch chat completion from API
+        async function getChatCompletion() {
+            const apiUrl = 'https://api.aimlapi.com/v1/chat/completions';  // Replace with the actual API URl
+            const userQuery = document.getElementById("userQuery").value;
+
+            try {
+                // Sending the POST request to the API
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer b2fa4cc4e34e40e49514ba1e9a765e97"  // Replace with your actual API key
+                    },
+                    body: JSON.stringify({
+                        "model": "microsoft/WizardLM-2-8x22B",  // Model name
+                        "messages": [
+                            {
+                                "role": "system",  // 'system' role can be used to set instructions
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",  // The role of the user asking the question
+                                "content": userQuery  // User input from the text box
+                            }
+                        ]
+                    })
+                });
+
+                // Check if the response status is OK (200)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                // Parse the response to JSON
+                const data = await response.json();
+
+                // Log the full API response to the console
+                console.log('API Response:', data);
+
+                // Extract the response from the assistant (assuming the API structure has 'choices')
+                const assistantResponse = data.choices && data.choices[0] && data.choices[0].message ? 
+                                           data.choices[0].message.content : 
+                                           'No response from assistant';
+
+                // Display the response in the HTML
+                document.getElementById("response").innerHTML = assistantResponse;
+            } catch (error) {
+                // Handle any errors
+                console.error('Error:', error);
+                document.getElementById("response").innerHTML = 'Sorry, something went wrong.';
+            }
+        }
+    </script>
+</body>
+</html>
